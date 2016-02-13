@@ -8,5 +8,6 @@
 - include: configure.yml
 - include: default_site.yml
 - include: sites.yml
+  when: nginx_sites is defined and nginx_sites and nginx_sites|lower != 'none'
 - include: monit.yml
   when: monit_protection is defined and monit_protection == true

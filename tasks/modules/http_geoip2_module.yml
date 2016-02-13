@@ -1,0 +1,46 @@
+# file: nginx/tasks/modules/http_geoip2_module.yml
+# configure flag: --with-http_geoip2_module
+
+- name: Nginx | Modules | Add the maxminde repository
+  apt_repository:
+    repo: ppa:maxmind/ppa
+
+- name: Nginx | Modules | Install GeoIp2 lib
+  apt: pkg={{ item }} state=latest
+  sudo: yes
+  with_items:
+    - libmaxminddb0
+    - libmaxminddb-dev
+    - mmdb-bin
+  when: nginx_source_modules_included.http_geoip2_module is defined
+
+- name: Nginx | Modules | Clone geoip2 module
+  git: repo=https://github.com/leev/ngx_http_geoip2_module.git dest=/tmp/ngx_http_geoip2_module
+
+- name: Nginx | Modules | Create directory inside nginx
+  file: path={{nginx_dir}}/geoip2 state=directory
+  when: nginx_source_modules_included.http_geoip2_module is defined
+
+- name: Nginx | Modules | Download GeoIP database files
+  get_url: url=http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz dest={{nginx_dir}}/geoip2/GeoLite2Country.mmdb.gz
+  when: nginx_source_modules_included.http_geoip2_module is defined
+
+- name: Nginx | Modules | Download GeoLiteCity database files
+  get_url: url=http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz dest={{nginx_dir}}/geoip2/GeoLite2City.mmdb.gz
+  when: nginx_source_modules_included.http_geoip2_module is defined
+
+- name: Nginx | Modules | Check if the GeoIP2 file exists
+  stat: path={{nginx_dir}}/geoip2/GeoLite2Country.mmdb
+  register: geoip2_file
+
+- name: Nginx | Modules | Unarchive GeoIP2 files
+  shell: gunzip -c {{nginx_dir}}/geoip2/GeoLite2Country.mmdb.gz > {{nginx_dir}}/geoip2/GeoLite2Country.mmdb
+  when: not geoip2_file.stat.exists
+
+- name: Nginx | Modules | Check if the GeoLite2City file exists
+  stat: path={{nginx_dir}}/geoip2/GeoLite2City.mmdb
+  register: geolitecity2_file
+
+- name: Nginx | Modules | Unarchive GeoLite2City files
+  shell: gunzip -c {{nginx_dir}}/geoip2/GeoLite2City.mmdb.gz > {{nginx_dir}}/geoip2/GeoLite2City.mmdb
+  when: not geolitecity2_file.stat.exists

@@ -79,6 +79,28 @@ http {
   geoip_country {{nginx_geoip_country}};
   geoip_city {{nginx_geoip_city}};
 {% endif %}
+
+{% if nginx_geoip2 == 'on' %}
+  {% if nginx_geoip2_country is defined and nginx_geoip2_country and nginx_geoip2_country != 'off' %}
+  # Country detect
+  geoip2 {{nginx_geoip2_country}} {
+    $geoip2_data_country_code default=US country iso_code;
+    $geoip2_data_country_name country names en;
+  }
+  {% endif %}
+  {% if nginx_geoip2_city is defined and nginx_geoip2_city and nginx_geoip2_city != 'off' %}
+  # City detect
+  geoip2 {{nginx_geoip2_city}} {
+    $geoip2_data_city_name default=New-York city names en;
+  }
+  {% endif %}
+  {% if nginx_geoip2_carrier is defined and nginx_geoip2_carrier and nginx_geoip2_carrier != 'off' %}
+  # Carrier detect
+  geoip2 {{nginx_geoip2_carrier}} {
+    $geoip2_data_carrier isp;
+  }
+  {% endif %}
+{% endif %}
 {% endif %}
 
 {% if nginx_buffers == 'on' %}
@@ -100,5 +122,5 @@ http {
 {% endif %}
 
   include {{nginx_dir}}/conf.d/*.conf;
-  include {{nginx_dir}}/sites-enabled/*;
+  include {{nginx_dir}}/sites-enabled/*.conf;
 }
