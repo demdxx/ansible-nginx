@@ -35,6 +35,11 @@
   when: item.value.unpack is not defined or not item.value.unpack
   with_dict: nginx_geoip2_import
 
+- name: Nginx | Modules | Remove GeoIP2 archives
+  command: rm "{{nginx_dir}}/geoip2/{{item.value.src | basename}}"
+  when: item.value.unpack is defined and item.value.unpack
+  with_dict: nginx_geoip2_import
+
 # - name: Nginx | Modules | Download GeoIP database files
 #   get_url: url=http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz dest={{nginx_dir}}/geoip2/GeoLite2Country.mmdb.gz
 #   when: nginx_source_modules_included.http_geoip2_module is defined
